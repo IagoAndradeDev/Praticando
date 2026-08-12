@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calculadora</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="calculadora-container">
+        <h1>PSICO</h1>
+    <!-- Números -->
+        <div id="painel-valores">
+            <label id="expressao-atual"></label>
+            <label id="resultado-final">0</label>
+        </div>
+        <div id="teclado-numerico">
+            <button onclick="apagarUltimo()" value="">⌫</button>
+            <button onclick="resetarCalculadora()" value="">AC</button>
+            <button onclick="selecionarOperador('%')">%</button>
+            <button onclick="digitarNumero(this.value)" value="7">7</button>
+            <button onclick="digitarNumero(this.value)" value="8">8</button>
+            <button onclick="digitarNumero(this.value)" value="9">9</button>
+            <button onclick="digitarNumero(this.value)" value="4">4</button>
+            <button onclick="digitarNumero(this.value)" value="5">5</button>
+            <button onclick="digitarNumero(this.value)" value="6">6</button>
+            <button onclick="digitarNumero(this.value)" value="1">1</button>
+            <button onclick="digitarNumero(this.value)" value="2">2</button>
+            <button onclick="digitarNumero(this.value)" value="3">3</button>
+            <button onclick="trocarSinal()" value="+/-">+/-</button>
+            <button onclick="digitarNumero(this.value)" value="0">0</button>
+            <button onclick="digitarNumero(this.value)" value=".">.</button>           
+        </div>   
+    <!-- Operações -->
+        <div id="teclado-operadores">
+            <button onclick="selecionarOperador('÷')">÷</button>
+            <button onclick="selecionarOperador('×')">×</button>
+            <button onclick="selecionarOperador('-')">-</button>
+            <button onclick="selecionarOperador('+')">+</button>
+            <button onclick="calcularResultado()">=</button>
+        </div>
+    </div> 
+    <!-- Resultado -->
+    
+
+    <script>
+    let expressaoCompleta = "";
+    let valorFinal = null;
+    let iniciouExpressao = false;
+    let resultadoMostrado = false
+
+    function digitarNumero(x) {
+        if (x === "." && expressaoCompleta.endsWith(".")) return;
+        if (x === "." && (expressaoCompleta === "" || expressaoCompleta.endsWith(" "))) {
+            expressaoCompleta += "0";
+        }
+        if (resultadoMostrado) {
+            expressaoCompleta = "";
+            valorFinal = null;
+            document.getElementById("resultado-final").innerHTML = "0";
+            document.getElementById("expressao-atual").innerHTML = "";
+            resultadoMostrado = false;
+        }
+
+        let partes = expressaoCompleta.split(" ");
+        let ultimo = partes[partes.length - 1];
+        if (x === "." && ultimo.includes(".")) return;
+
+        if (x === "." && (expressaoCompleta === "" || expressaoCompleta.endsWith(" "))) {
+            expressaoCompleta += "0";
+        }
+
+        if (!iniciouExpressao) {
+            document.getElementById("resultado-final").innerHTML = "0";
+            document.getElementById("expressao-atual").innerHTML = "";
+            iniciouExpressao = true;
+        }
+
+        expressaoCompleta += x;
+        document.getElementById("resultado-final").innerHTML = expressaoCompleta;
+    }
+
+    function resetarCalculadora() {
+        expressaoCompleta = "";
+        valorFinal = null;
+        document.getElementById("resultado-final").innerHTML = "0";
+        document.getElementById("expressao-atual").innerHTML = "";
+    }
+
+    function apagarUltimo() {
+        if (expressaoCompleta.length > 0) {
+            expressaoCompleta = expressaoCompleta.trim(); 
+            expressaoCompleta = expressaoCompleta.slice(0, -1);
+            document.getElementById("resultado-final").innerHTML = expressaoCompleta;
+        }
+    }
+
+    function selecionarOperador(sinalOperador) {
+        const operadoresValidos = ["+", "-", "×", "÷", "%"];
+
+        if (!operadoresValidos.includes(sinalOperador)) {
+            alert("ERRO: Operador inválido.");
+            return;
+        }
+        if (resultadoMostrado) {
+        expressaoCompleta = valorFinal.toString();
+        resultadoMostrado = false;
+        }
+        if (expressaoCompleta === "" || expressaoCompleta.endsWith(" ")) {
+            return;
+        }
+        expressaoCompleta += ` ${sinalOperador} `;
+    document.getElementById("resultado-final").innerHTML = expressaoCompleta;
+    }
+
+    function calcularResultado() {
+        if (expressaoCompleta === "") {
+            return;
+        }
+        try {
+            if (/^\d+(\.\d+)?\s*%$/.test(expressaoCompleta.trim())) {
+                let numero = parseFloat(expressaoCompleta);
+                valorFinal = numero / 100;
+                document.getElementById("resultado-final").innerHTML = valorFinal;
+                return;
+            }
+            let expressaoJS = expressaoCompleta
+                .replace(/×/g, "*")
+                .replace(/÷/g, "/")
+                .replace(/%/g, "%");
+
+            valorFinal = eval(expressaoJS);
+            let formatado = Number.isInteger(valorFinal) ? valorFinal : valorFinal.toFixed(2);
+            resultadoMostrado = true
+            document.getElementById("expressao-atual").innerHTML = expressaoCompleta;
+            document.getElementById("resultado-final").innerHTML = formatado;
+        } catch (e) {
+            alert("Erro ao calcular!");
+        }
+    }
+
+    function trocarSinal() {
+        if (expressaoCompleta === "") return;
+
+        expressaoCompleta = expressaoCompleta.trim();
+
+        let partes = expressaoCompleta.split(" ");
+        let ultimo = partes[partes.length - 1];
+
+        if (/^\(-\d+(\.\d+)?\)$/.test(ultimo)) {
+            ultimo = ultimo.replace(/\(|\)/g, "").replace("-", "");
+        } 
+        else if (/^\d+(\.\d+)?$/.test(ultimo)) {
+            ultimo = `(-${ultimo})`;
+        }
+
+        partes[partes.length - 1] = ultimo;
+        expressaoCompleta = partes.join(" ");
+        document.getElementById("expressao-atual").innerHTML = expressaoCompleta;
+    }
+    </script>
+
+</body>
+</html>
